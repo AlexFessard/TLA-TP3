@@ -1,4 +1,4 @@
----------------- MODULE philosophes_skeleton ----------------
+---------------- MODULE philosophes0_1 ----------------
 (* Philosophes. Version en utilisant l'état des voisins. *)
 
 EXTENDS Naturals
@@ -8,7 +8,7 @@ CONSTANT N
 Philos == 0..N-1
 
 left(i) == (i+1)%N       \* philosophe à gauche du philo n°i
-drrightoite(i) == (i+N-1)%N     \* philosophe à droite du philo n°i
+right(i) == (i+N-1)%N     \* philosophe à droite du philo n°i
 
 Hungry == "H"
 Thinking == "T"
@@ -29,18 +29,30 @@ Liveness ==
 Init ==
     /\ state = [i \in Philos |-> Thinking]
 
-ask(i) == TRUE  \* À changer
+ask(i) ==
+    /\ state[i] = Thinking
+    /\ state' = [state EXCEPT ![i] = Hungry]
 
-eat(i) == TRUE  \* À changer
+eat(i) ==
+    /\ state[i] = Hungry
+    /\ state[left(i)] # Eating
+    /\ state[right(i)] # Eating
+    /\ state' = [state EXCEPT ![i] = Eating]
 
-think(i) == TRUE  \* À changer
+think(i) ==
+    /\ state[i] = Eating
+    /\ state' = [state EXCEPT ![i] = Thinking]
 
 Next ==
   \E i \in Philos : \/ ask(i)
                     \/ eat(i)
                     \/ think(i)
 
-Fairness == TRUE \* À changer
+Fairness ==
+    \A i \in Philos : 
+        /\ SF_state(ask(i))
+        /\ SF_state(eat(i))
+        /\ SF_state(think(i))
 
 Spec ==
   /\ Init
