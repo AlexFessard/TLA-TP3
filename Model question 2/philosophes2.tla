@@ -29,6 +29,11 @@ MutualExclusion ==
 Liveness ==
   \A i \in Philos : (state[i] = Hungry) ~> (state[i] = Eating)
 
+Sanity ==
+  \A i \in Philos : forks[i] = Taken => state[i] = Eating
+
+
+
 ----------------------------------------------------------------
 
 (* Initialisation *)
@@ -68,7 +73,7 @@ Fairness ==
 
 Spec ==
   /\ Init
-  /\ [] [Next]_<<state>>
+  /\ [] [Next]_<<state, forks>>
   /\ Fairness
 
 ================================
