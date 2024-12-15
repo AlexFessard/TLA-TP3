@@ -54,6 +54,8 @@ takeForks(i) ==
 
 releaseForks(i) ==
     /\ state[i] = Eating
+    /\ forks[i] = Taken
+    /\ forks[right(i)] = Taken
     /\ forks' = [forks EXCEPT ![i] = Free, ![right(i)] = Free]
     /\ state' = [state EXCEPT ![i] = Thinking]
 
@@ -65,9 +67,9 @@ Next ==
 (* Contraintes d'équité *)
 Fairness ==
   \A i \in Philos : 
-    /\ WF_state(ask(i))
-    /\ WF_state(takeForks(i))
-    /\ WF_state(releaseForks(i))
+    /\ SF_state(ask(i))
+    /\ SF_state(takeForks(i))
+    /\ SF_state(releaseForks(i))
 
 Spec ==
   /\ Init
