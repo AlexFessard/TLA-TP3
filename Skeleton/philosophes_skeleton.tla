@@ -8,7 +8,7 @@ CONSTANT N
 Philos == 0..N-1
 
 left(i) == (i+1)%N       \* philosophe à gauche du philo n°i
-drrightoite(i) == (i+N-1)%N     \* philosophe à droite du philo n°i
+right(i) == (i+N-1)%N     \* philosophe à droite du philo n°i
 
 Hungry == "H"
 Thinking == "T"
