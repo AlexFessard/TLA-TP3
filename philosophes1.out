@@ -1,0 +1,58 @@
+@!@!@STARTMSG 2262:0 @!@!@
+TLC2 Version 2.20 of Day Month 20?? (rev: fa98279)
+@!@!@ENDMSG 2262 @!@!@
+@!@!@STARTMSG 2187:0 @!@!@
+Running breadth-first search Model-Checking with fp 122 and seed -2075380589962674749 with 1 worker on 8 cores with 3641MB heap and 64MB offheap memory [pid: 19739] (Mac OS X 15.0.1 aarch64, Oracle Corporation 17.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file /Users/alex/Desktop/Supaero 3/Validation fonctionnelle/TLA-TP3/philosophes1.tla
+Parsing file /private/var/folders/2c/y_l9lkkn1090pnxjm6y80wgc0000gn/T/tlc-12617045158341437631/Naturals.tla (jar:file:/Users/alex/.vscode/extensions/tlaplus.vscode-ide-2024.11.240044/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Semantic processing of module Naturals
+Semantic processing of module philosophes1
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting... (2024-11-25 15:28:41)
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2212:0 @!@!@
+Implied-temporal checking--satisfiability problem has 5 branches.
+@!@!@ENDMSG 2212 @!@!@
+@!@!@STARTMSG 2189:0 @!@!@
+Computing initial states...
+@!@!@ENDMSG 2189 @!@!@
+@!@!@STARTMSG 2190:0 @!@!@
+Finished computing initial states: 1 distinct state generated at 2024-11-25 15:28:41.
+@!@!@ENDMSG 2190 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(7) at 2024-11-25 15:28:41: 236 states generated, 81 distinct states found, 0 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2192:0 @!@!@
+Checking 5 branches of temporal properties for the complete state space with 405 total distinct states at (2024-11-25 15:28:41)
+@!@!@ENDMSG 2192 @!@!@
+@!@!@STARTMSG 2267:0 @!@!@
+Finished checking temporal properties in 00s at 2024-11-25 15:28:41
+@!@!@ENDMSG 2267 @!@!@
+@!@!@STARTMSG 2193:0 @!@!@
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 6.8E-16
+@!@!@ENDMSG 2193 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(7) at 2024-11-25 15:28:41: 236 states generated (39,224 s/min), 81 distinct states found (13,462 ds/min), 0 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2199:0 @!@!@
+236 states generated, 81 distinct states found, 0 states left on queue.
+@!@!@ENDMSG 2199 @!@!@
+@!@!@STARTMSG 2194:0 @!@!@
+The depth of the complete state graph search is 7.
+@!@!@ENDMSG 2194 @!@!@
+@!@!@STARTMSG 2268:0 @!@!@
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 5 and the 95th percentile is 3).
+@!@!@ENDMSG 2268 @!@!@
+@!@!@STARTMSG 2186:0 @!@!@
+Finished in 365ms at (2024-11-25 15:28:41)
+@!@!@ENDMSG 2186 @!@!@
