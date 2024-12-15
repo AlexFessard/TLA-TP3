@@ -22,7 +22,7 @@ TypeInvariant ==
 
 (* Propriétés *)
 MutualExclusion ==
-  []( \A i \in Philos : state[i] = Eating => state[left(i)] # Eating /\ state[right(i)] # Eating)
+  \A i \in Philos : [](state[i] = Eating => state[left(i)] # Eating /\ state[right(i)] # Eating)
 
 Liveness ==
   \A i \in Philos : (state[i] = Hungry) ~> (state[i] = Eating)
@@ -69,5 +69,6 @@ Spec ==
   /\ Init
   /\ [] [Next]_<<state, queue>>
   /\ Fairness
+  /\ MutualExclusion
 
 ================================
