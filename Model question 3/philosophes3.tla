@@ -56,32 +56,24 @@ think(i) ==
         ![right(i)] = Unhold]
     /\ state' = [ state EXCEPT ![i] = Thinking ]
 
-request_left_fork(i) ==
+request_both_forks(i) ==
     /\ state[i] = Hungry
     /\ forks_state[left(i)] = Unhold
-    /\ forks_state' = [ forks_state EXCEPT ![left(i)] = i ]
-    /\ UNCHANGED state
-
-request_right_fork(i) ==
-    /\ state[i] = Hungry
     /\ forks_state[right(i)] = Unhold
-    /\ forks_state[left(i)] = i
-    /\ forks_state' = [ forks_state EXCEPT ![right(i)] = i ]
+    /\ forks_state' = [ forks_state EXCEPT ![left(i)] = i, ![right(i)] = i ]
     /\ UNCHANGED state
 
 Next ==
   \E i \in Philos : \/ ask(i)
                     \/ eat(i)
                     \/ think(i)
-                    \/ request_left_fork(i)
-                    \/ request_right_fork(i)
+                    \/ request_both_forks(i)
 
 Fairness ==
     \A i \in Philos :
         /\ WF_<<state, forks_state>>(eat(i))
         /\ WF_<<state, forks_state>>(think(i))
-        /\ WF_<<state, forks_state>>(request_left_fork(i))
-        /\ WF_<<state, forks_state>>(request_right_fork(i))
+        /\ WF_<<state, forks_state>>(ask(i))
 
 Spec ==
   /\ Init
