@@ -21,7 +21,8 @@ VARIABLES
 TypeInvariant == 
   /\ state \in [Philos -> {Hungry, Thinking, Eating}]
   /\ forks_state \in [Forks -> [owner: Philos, state: {Dirty, Clean}]]
-  /\ requests \in [Forks -> Seq(Philos)]
+  /\ requests \in [Forks -> Seq(Philos)] \* mapping from forks to sequences of 
+                                         \* philosophers waiting for them
 
 (* Propriétés *)
 MutualExclusion ==
@@ -35,17 +36,25 @@ Liveness ==
 (* Initialisation *)
 Init ==
   /\ state = [i \in Philos |-> Thinking]
-  /\ forks_state = [i \in Forks |-> [owner |-> IF i < right(i) THEN i ELSE right(i), state |-> Dirty]]
+  /\ forks_state = [i \in Forks |-> [owner |-> 
+    IF i < right(i) THEN i 
+    ELSE right(i), state |-> Dirty]]
   /\ requests = [i \in Forks |-> <<>>]
 
 (* Transitions *)
 
 ask(i) ==
   /\ state[i] = Thinking
-  /\ state' = [state EXCEPT ![i] = Hungry]
-  /\ requests' = [requests EXCEPT ![left(i)] = Append(requests[left(i)], i),
-                                ![right(i)] = Append(requests[right(i)], i)]
-  /\ UNCHANGED forks_state
+  /\ IF forks_state[i].owner # i THEN
+        requests' = [requests EXCEPT ![i] = Append(requests[i], i)]
+     ELSE
+        requests' = requests
+  /\ IF forks_state[right(i)].owner # i THEN
+        requests' = [requests EXCEPT ![right(i)] = Append(requests[right(i)], i)]
+     ELSE
+        requests' = requests
+    /\ state' = [state EXCEPT ![i] = Hungry]
+    /\ UNCHANGED forks_state
 
 receiveFork(i, j) ==
   /\ state[i] = Hungry
@@ -59,7 +68,7 @@ receiveFork(i, j) ==
 
 eat(i) ==
   /\ state[i] = Hungry
-  /\ forks_state[left(i)].owner = i
+  /\ forks_state[i].owner = i
   /\ forks_state[right(i)].owner = i
   /\ state' = [state EXCEPT ![i] = Eating]
   /\ UNCHANGED forks_state
