@@ -19,13 +19,12 @@ Dirty == "D"
 Clean == "C"
 
 VARIABLES
-    state, forks_state, requests
+    state, forks_state, requested
 
 TypeInvariant == 
   /\ state \in [Philos -> {Hungry, Thinking, Eating}]
   /\ forks_state \in [Forks -> [owner: Philos, state: {Dirty, Clean}]]
-  /\ requests \in [Forks -> Seq(Philos)] \* mapping from forks to sequences of 
-                                         \* philosophers waiting for them
+  /\ requested \in [Philos -> [left: BOOLEAN, right: BOOLEAN]]
 
 (* Propriétés *)
 MutualExclusion ==
@@ -43,36 +42,28 @@ Init ==
     [owner |-> IF i < left(i) THEN i 
                ELSE left(i), 
     state |-> Dirty]]
-  /\ requests = [i \in Forks |-> <<>>]
+  /\ requested = [i \in Philos |-> [left |-> FALSE, right |-> FALSE]]
 
 (* Transitions *)
 
 ask(i) ==
   /\ state[i] \in {Hungry, Thinking}
-  /\ (SelectSeq(requests[left_fork(i)], LAMBDA x: x = i) = <<>> \* check if i is already in the queue
-      \/ SelectSeq(requests[right_fork(i)], LAMBDA x: x = i) = <<>>)
-  /\ requests' = [requests EXCEPT
-      ![left_fork(i)] = 
-        IF forks_state[left_fork(i)].owner # i /\ SelectSeq(requests[left_fork(i)], LAMBDA x: x = i) = <<>>
-            THEN Append(requests[left_fork(i)], i) 
-        ELSE requests[left_fork(i)],
-      ![right_fork(i)] = 
-        IF forks_state[right_fork(i)].owner # i /\ SelectSeq(requests[right_fork(i)], LAMBDA x: x = i) = <<>>
-            THEN Append(requests[right_fork(i)], i) 
-        ELSE requests[right_fork(i)]]
+  /\ (requested[i].left = FALSE \/ requested[i].right = FALSE)
+  /\ requested' = [requested EXCEPT
+      ![i] = [left |-> (requested[i].left \/ (forks_state[left_fork(i)].owner # i)),
+              right |-> (requested[i].right \/ (forks_state[right_fork(i)].owner # i))]]
   /\ state' = [state EXCEPT ![i] = Hungry]
   /\ UNCHANGED forks_state
 
 receiveFork(i, j) == \* philosopher i receives fork j
   /\ state[i] = Hungry
-  /\ requests[j] # <<>>
-  /\ Head(requests[j]) = i
   /\ state[forks_state[j].owner] # Eating \* the owner of the fork is not eating
   /\ forks_state[j].owner # i
   /\ forks_state[j].state = Dirty
   /\ forks_state' = [forks_state EXCEPT 
         ![j] = [owner |-> i, state |-> Clean]] \* pass over the clean fork to i
-  /\ requests' = [requests EXCEPT ![j] = Tail(requests[j])] \* remove i from the queue
+  /\ requested' = [requested EXCEPT ![i] = [left |-> (requested[i].left \/ (j = left_fork(i))),
+                                            right |-> (j = right_fork(i))]]
   /\ UNCHANGED state
 
 eat(i) ==
@@ -81,7 +72,7 @@ eat(i) ==
   /\ forks_state[right_fork(i)].owner = i
   /\ state' = [state EXCEPT ![i] = Eating]
   /\ UNCHANGED forks_state
-  /\ UNCHANGED requests
+  /\ UNCHANGED requested
 
 think(i) ==
   /\ state[i] = Eating
@@ -89,7 +80,7 @@ think(i) ==
   /\ forks_state' = [forks_state EXCEPT
       ![left_fork(i)] = [owner |-> forks_state[left_fork(i)].owner, state |-> Dirty],
       ![right_fork(i)] = [owner |-> forks_state[right_fork(i)].owner, state |-> Dirty]]
-  /\ UNCHANGED requests
+  /\ requested' = [requested EXCEPT ![i] = [left |-> FALSE, right |-> FALSE]]
 
 Next ==
   \E i \in Philos : \/ ask(i)
@@ -100,15 +91,15 @@ Next ==
 (* Contraintes d'équité *)
 Fairness ==
   \A i \in Philos : 
-    /\ WF_<<state, forks_state, requests>>(ask(i))
-    /\ WF_<<state, forks_state, requests>>(receiveFork(i, left(i)))
-    /\ WF_<<state, forks_state, requests>>(receiveFork(i, right(i)))
-    /\ WF_<<state, forks_state, requests>>(eat(i))
-    /\ WF_<<state, forks_state, requests>>(think(i))
+    /\ WF_<<state, forks_state, requested>>(ask(i))
+    /\ WF_<<state, forks_state, requested>>(receiveFork(i, left(i)))
+    /\ WF_<<state, forks_state, requested>>(receiveFork(i, right(i)))
+    /\ WF_<<state, forks_state, requested>>(eat(i))
+    /\ WF_<<state, forks_state, requested>>(think(i))
 
 Spec ==
   /\ Init
-  /\ [][Next]_<<state, forks_state, requests>>
+  /\ [][Next]_<<state, forks_state, requested>>
   /\ Fairness
 
 ================================
