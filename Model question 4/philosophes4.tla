@@ -6,8 +6,8 @@ CONSTANT N
 Philos == 0..N-1
 Forks == 0..N-1
 
-left(i) == (i+1) % N
-right(i) == (i+N-1) % N
+right(i) == (i+1) % N
+left(i) == (i+N-1) % N
 
 Hungry == "H"
 Thinking == "T"
@@ -36,34 +36,33 @@ Liveness ==
 (* Initialisation *)
 Init ==
   /\ state = [i \in Philos |-> Thinking]
-  /\ forks_state = [i \in Forks |-> [owner |-> 
-    IF i < right(i) THEN i 
-    ELSE right(i), state |-> Dirty]]
+  /\ forks_state = [i \in Forks |-> 
+    [owner |-> IF i < left(i) THEN i 
+               ELSE left(i), 
+    state |-> Dirty]]
   /\ requests = [i \in Forks |-> <<>>]
 
 (* Transitions *)
 
 ask(i) ==
-  /\ state[i] = Thinking
-  /\ IF forks_state[i].owner # i THEN
-        requests' = [requests EXCEPT ![i] = Append(requests[i], i)]
-     ELSE
-        requests' = requests
-  /\ IF forks_state[right(i)].owner # i THEN
-        requests' = [requests EXCEPT ![right(i)] = Append(requests[right(i)], i)]
-     ELSE
-        requests' = requests
+    /\ state[i] = Thinking
+    /\ requests' = [requests EXCEPT
+      ![i] = IF forks_state[i].owner # i THEN Append(requests[i], i) 
+            ELSE requests[i],
+      ![right(i)] = IF forks_state[right(i)].owner # i THEN Append(requests[right(i)], i) 
+                    ELSE requests[right(i)]]
     /\ state' = [state EXCEPT ![i] = Hungry]
     /\ UNCHANGED forks_state
 
-receiveFork(i, j) ==
+receiveFork(i, j) == \* philosopher i receives fork j
   /\ state[i] = Hungry
-  /\ requests[j] /= <<>>
+  /\ requests[j] # <<>>
   /\ Head(requests[j]) = i
   /\ forks_state[j].owner # i
   /\ forks_state[j].state = Dirty
-  /\ forks_state' = [forks_state EXCEPT ![j] = [owner |-> i, state |-> Clean]]
-  /\ requests' = [requests EXCEPT ![j] = Tail(requests[j])]
+  /\ forks_state' = [forks_state EXCEPT 
+        ![j] = [owner |-> i, state |-> Clean]] \* pass over the clean fork to i
+  /\ requests' = [requests EXCEPT ![j] = Tail(requests[j])] \* remove i from the queue
   /\ UNCHANGED state
 
 eat(i) ==
@@ -78,11 +77,9 @@ think(i) ==
   /\ state[i] = Eating
   /\ state' = [state EXCEPT ![i] = Thinking]
   /\ forks_state' = [forks_state EXCEPT
-      ![left(i)] = [owner |-> forks_state[left(i)].owner, state |-> Dirty],
+      ![i] = [owner |-> forks_state[i].owner, state |-> Dirty],
       ![right(i)] = [owner |-> forks_state[right(i)].owner, state |-> Dirty]]
-  /\ requests' = [requests EXCEPT
-      ![left(i)] = Append(requests[left(i)], i),
-      ![right(i)] = Append(requests[right(i)], i)]
+  /\ UNCHANGED requests
 
 Next ==
   \E i \in Philos : \/ ask(i)
