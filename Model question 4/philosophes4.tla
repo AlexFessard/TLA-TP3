@@ -51,19 +51,27 @@ ask(i) ==
     /\ forks_state[left_fork(i)].owner # i
     /\ forks_state[right_fork(i)].owner # i
     /\ (requested[i].left = FALSE \/ requested[i].right = FALSE)
-    /\ requested' = [requested EXCEPT
-        ![i] = [left |-> (requested[i].left \/ (forks_state[left_fork(i)].owner # i)),
-                right |-> (requested[i].right \/ (forks_state[right_fork(i)].owner # i))]]
+    /\ requested' = 
+        [requested EXCEPT ![i] = 
+            [left |-> 
+                (
+                \/ requested[i].left 
+                \/ (/\ forks_state[left_fork(i)].owner # i 
+                    /\ (\/ forks_state[left_fork(i)].state = Clean 
+                        \/ state[left(i)] = Eating)
+                    )
+                ),
+            right |-> 
+                (
+                \/ requested[i].right 
+                \/ (/\ forks_state[right_fork(i)].owner # i
+                    /\ (\/ forks_state[right_fork(i)].state = Clean
+                        \/ state[right(i)] = Eating)
+                    )
+                )
+            ]
+        ]
     /\ state' = [state EXCEPT ![i] = Hungry]
-    \* /\ forks_state' = [forks_state EXCEPT
-    \*     \![left_fork(i)] = @ 
-    \*     IF state(forks_state[left_fork(i)].owner) # Eating /\ forks_state[left_fork(i)].state = Dirty
-    \*         THEN [owner |-> i, state |-> Clean]
-    \*     ELSE @,
-    \*     \![right_fork(i)] = @ 
-    \*     IF state(forks_state[right_fork(i)].owner) # Eating /\ forks_state[right_fork(i)].state = Dirty
-    \*         THEN [owner |-> i, state |-> Clean]
-        \*     ELSE @]
     /\ forks_state' = [forks_state EXCEPT
         ![left_fork(i)] = [owner |-> 
             IF state[forks_state[left_fork(i)].owner] # Eating /\ forks_state[left_fork(i)].state = Dirty 
@@ -82,17 +90,6 @@ ask(i) ==
                 THEN Clean 
             ELSE @.state]]
 
-\* receiveFork(i, j) == \* philosopher i receives fork j
-\*   /\ state[i] = Hungry
-\*   /\ state[forks_state[j].owner] # Eating \* the owner of the fork is not eating
-\*   /\ forks_state[j].owner # i
-\*   /\ forks_state[j].state = Dirty
-\*   /\ forks_state' = [forks_state EXCEPT 
-\*         \![j] = [owner |-> i, state |-> Clean]] \* pass over the clean fork to i
-\*   /\ requested' = [requested EXCEPT ![i] = [left |-> (requested[i].left \/ (j = left_fork(i))),
-\*                                             right |-> (j = right_fork(i))]]
-\*   /\ UNCHANGED state
-
 eat(i) ==
   /\ state[i] = Hungry
   /\ forks_state[left_fork(i)].owner = i
@@ -103,14 +100,14 @@ eat(i) ==
       ![right_fork(i)] = [owner |-> @.owner, state |-> Dirty]]
   /\ UNCHANGED requested
 
-think(i) ==
+release(i) ==
     /\ state[i] = Eating
     /\ state' = [state EXCEPT ![i] = Thinking]
     /\ forks_state' = [forks_state EXCEPT
         ![right_fork(i)] = 
         [owner |-> 
             IF requested[right(i)].left = TRUE 
-                THEN i 
+                THEN right(i) 
             ELSE @.owner,
         state |-> 
             IF requested[right(i)].left = TRUE 
@@ -119,7 +116,7 @@ think(i) ==
         ![left_fork(i)] =  
         [owner |-> 
             IF requested[left(i)].right = TRUE 
-                THEN i 
+                THEN left(i) 
             ELSE @.owner,
         state |-> 
             IF requested[left(i)].right = TRUE 
@@ -131,18 +128,15 @@ think(i) ==
 
 Next ==
   \E i \in Philos : \/ ask(i)
-                    \* \/ \E j \in Forks : receiveFork(i, j)
                     \/ eat(i)
-                    \/ think(i)
+                    \/ release(i)
 
 (* Contraintes d'équité *)
 Fairness ==
   \A i \in Philos : 
     /\ WF_<<state, forks_state, requested>>(ask(i))
-    \* /\ WF_<<state, forks_state, requested>>(receiveFork(i, left(i)))
-    \* /\ WF_<<state, forks_state, requested>>(receiveFork(i, right(i)))
     /\ WF_<<state, forks_state, requested>>(eat(i))
-    /\ WF_<<state, forks_state, requested>>(think(i))
+    /\ WF_<<state, forks_state, requested>>(release(i))
 
 Spec ==
   /\ Init
